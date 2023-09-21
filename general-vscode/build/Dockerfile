@@ -10,10 +10,6 @@ RUN apt-get update \
 	wget \
 	&& rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update \
-	apt-get install -y \
-	docker
-
 ARG USER=coder
 RUN useradd --groups sudo --no-create-home --shell /bin/bash ${USER} \
 	&& echo "${USER} ALL=(ALL) NOPASSWD:ALL" >/etc/sudoers.d/${USER} \
