@@ -38,7 +38,22 @@ resource "coder_app" "node-angular-app" {
     interval  = 10
     threshold = 30
   }
+}
 
+# node app
+resource "coder_app" "five-server" {
+  agent_id  = coder_agent.main.id
+  slug      = "five-server"
+  icon      = "https://raw.githubusercontent.com/yandeu/five-server-vscode/main/img/icon.png"
+  url       = "http://localhost:5500"
+  subdomain = true
+  share     = "public"
+
+  healthcheck {
+    url       = "http://localhost:5500/healthz"
+    interval  = 10
+    threshold = 30
+  }
 }
 
 resource "coder_agent" "main" {

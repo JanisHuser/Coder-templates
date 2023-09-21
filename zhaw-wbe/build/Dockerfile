@@ -12,8 +12,7 @@ RUN apt-get update \
 
 RUN apt-get update \
 	&& apt-get install -y \
-	unzip \
-	sftp 
+	unzip
 
 # Install Node JS
 RUN curl -fsSL https://deb.nodesource.com/setup_19.x | sudo -E bash
@@ -25,5 +24,3 @@ RUN useradd --groups sudo --no-create-home --shell /bin/bash ${USER} \
 	&& chmod 0440 /etc/sudoers.d/${USER}
 USER ${USER}
 WORKDIR /home/${USER}
-
-RUN sudo npm install -g @angular/cli
