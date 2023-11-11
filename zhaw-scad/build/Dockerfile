@@ -10,17 +10,32 @@ RUN apt-get update \
 	wget \
 	&& rm -rf /var/lib/apt/lists/*
 
-# # Install nodejs and npm
-# RUN sudo apt update \
-# 	&& apt-get install -y \
-# 	nodejs \
-# 	npm \
-# 	unzip 
+RUN curl -s https://deb.nodesource.com/setup_18.x | sudo bash
+# Install nodejs and npm
+RUN sudo apt update \
+	&& apt-get install -y \
+	unzip \
+	curl \
+	git \
+	golang \
+	sudo \
+	vim \
+	wget \
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN sudo apt-get update
+
+# Install Node JS
+RUN curl -fsSL https://deb.nodesource.com/setup_19.x | sudo -E bash
+RUN sudo apt-get install -y nodejs
 
 # # Install AWS Cli
 # RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
 # 	&& unzip awscliv2.zip \
 # 	&& sudo ./aws/install
+
+# Install Docker
+RUN curl -fsSL https://get.docker.com | sh
 
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
@@ -32,7 +47,14 @@ RUN sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft
 RUN apt-get update
 RUN apt-get install -y \
 	azure-functions-core-tools-4 \
-	python3.10-venv
+	python3.10-venv \
+	python3-pip
+
+
+# INSTALL BALLERINA
+RUN wget https://dist.ballerina.io/downloads/2201.8.2/ballerina-2201.8.2-swan-lake-linux-x64.deb
+RUN dpkg -i ballerina-2201.8.2-swan-lake-linux-x64.deb
+RUN rm ballerina-2201.8.2-swan-lake-linux-x64.deb
 
 # recommended: remove the system-wide environment override
 RUN rm /etc/environment

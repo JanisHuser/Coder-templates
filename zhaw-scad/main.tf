@@ -24,8 +24,25 @@ provider "docker" {
 data "coder_workspace" "me" {
 }
 
+# node app
+resource "coder_app" "node-app" {
+  agent_id  = coder_agent.main.id
+  slug      = "node-app"
+  icon      = "https://upload.wikimedia.org/wikipedia/commons/d/d9/Node.js_logo.svg"
+  url       = "http://localhost:3000"
+  subdomain = true
+  share     = "public"
+
+  healthcheck {
+    url       = "http://localhost:3000/healthz"
+    interval  = 10
+    threshold = 30
+  }
+}
+
 resource "coder_agent" "main" {
-  arch                   = data.coder_provisioner.me.arch
+  # arch                   = data.coder_provisioner.me.arch
+  arch           = "amd64"
   os                     = "linux"
   startup_script_timeout = 180
   startup_script         = <<-EOT
@@ -132,6 +149,20 @@ resource "coder_app" "code-server" {
   }
 }
 
+resource "docker_network" "private_network" {
+  name = "network-${data.coder_workspace.me.id}"
+}
+
+resource "docker_container" "dind" {
+  image      = "docker:dind"
+  privileged = true
+  name       = "dind-${data.coder_workspace.me.id}"
+  entrypoint = ["dockerd", "-H", "tcp://0.0.0.0:2375"]
+  networks_advanced {
+    name = docker_network.private_network.name
+  }
+}
+
 resource "docker_volume" "home_volume" {
   name = "coder-${data.coder_workspace.me.id}-home"
   # Protect the volume from being deleted due to changes in attributes.
@@ -181,7 +212,10 @@ resource "docker_container" "workspace" {
   hostname = data.coder_workspace.me.name
   # Use the docker gateway if the access URL is 127.0.0.1
   entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
-  env        = ["CODER_AGENT_TOKEN=${coder_agent.main.token}"]
+  env        = [
+    "CODER_AGENT_TOKEN=${coder_agent.main.token}",
+    "DOCKER_HOST=${docker_container.dind.name}:2375"
+  ]
   host {
     host = "host.docker.internal"
     ip   = "host-gateway"
@@ -207,5 +241,8 @@ resource "docker_container" "workspace" {
   labels {
     label = "coder.workspace_name"
     value = data.coder_workspace.me.name
+  }
+  networks_advanced {
+    name = docker_network.private_network.name
   }
 }
